@@ -39,6 +39,13 @@ vim.api.nvim_create_user_command("UnrealCD", function(opts)
 end, {
 })
 
+vim.api.nvim_create_user_command("NeoUnrealRun", function(opts)
+    require("unreal").run_project(opts)
+end, {})
+vim.api.nvim_create_user_command("NeoUnrealJobs", function(opts)
+    require("unreal").select_job(opts)
+end, {})
+
 function setup(args)
     print("setting up plugin")
 end
