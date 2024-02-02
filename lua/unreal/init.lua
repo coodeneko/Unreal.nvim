@@ -119,7 +119,6 @@ M.generate_config = function(opts)
         opts.uprojectdirs = opts.uprojectdirs or "Default.uprojectdirs"
         local dirs = folders_to_search(opts.uprojectdirs)
 
-        local scan = require("plenary.scandir")
         local projects_files = scan.scan_dir(dirs, {
             depth = 2,
             search_pattern = ".*%.uproject$",})
@@ -170,7 +169,6 @@ end
 M.unreal_build_tool = function(module, mode, opts)
     async.run(function()
         opts = opts or {}
-        local restore_def = mode == "GenerateClangDatabase"
         if M.current_config == nil then
             M.initialize_config()
         end
@@ -185,6 +183,7 @@ M.unreal_build_tool = function(module, mode, opts)
                 if M.current_window == nil then
                     vim.cmd("below new")
                     vim.cmd("wincmd J")
+                    vim.cmd("res 10 wincmd _")
                     M.current_window = vim.api.nvim_get_current_win()
                 end
                 local win = M.current_window
@@ -234,7 +233,7 @@ M.select_job = function(opts)
         local width = 30
         local borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }
 
-        local _ = popup.create(tasks, {
+        local _ = vim.ui.select(tasks, {
             title = "MyProjects",
             highlight = "MyProjectWindow",
             line = math.floor(((vim.o.lines - height) / 2) - 1),
@@ -242,20 +241,21 @@ M.select_job = function(opts)
             minwidth = width,
             minheight = height,
             borderchars = borderchars,
-            callback = function(_, sel)
+        },
+            function(sel)
                 if sel == "Quit" then return end
 
-                local project, target, mode = string.match(sel, "(.*) %- (.*) %- (.*)")
+                local _, target, mode = string.match(sel, "(.*) %- (.*) %- (.*)")
                 --P({project, target, mode})
                 M.unreal_build_tool(target, mode)
-            end,
-        })
+            end
+        )
     end)
         --local bufnr = vim.api.nvim_win_get_buf(Win_id)
     end)
 end
 
-M.run_project = function(opts)
+M.run_project = function(_)
     async.run(function()
         if M.current_config == nil then
             M.initialize_config()
